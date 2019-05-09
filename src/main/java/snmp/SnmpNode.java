@@ -299,8 +299,9 @@ public class SnmpNode {
 		Action act = new Action(Permission.READ, new RemoveOidHandler(valnode));
 		valnode.createChild("remove").setAction(act).build().setSerializable(false);
 
-		valnode.setWritable(Writable.WRITE);
-		valnode.getListener().setValueHandler(new SetHandler(valnode));
+        act = new Action(Permission.READ, new SetHandler(valnode));
+		act.addParameter(new Parameter("value", ValueType.STRING));
+        valnode.createChild("set").setAction(act).build().setSerializable(false);
 
 		act = new Action(Permission.READ, new EditOidHandler(valnode));
 		act.addParameter(new Parameter("Name", ValueType.STRING, new Value(valnode.getName())));
@@ -320,14 +321,18 @@ public class SnmpNode {
 			if (!event.isFromExternalSource())
 				return;
 			PDU pdu = new PDU();
-			Value oid = vnode.getAttribute("oid");
-			Value syntax = vnode.getAttribute("syntax");
-			if (oid == null || syntax == null)
-				return;
-			String valstring = event.getCurrent().getString();
-			int syntaxInt = syntax.getNumber().intValue();
+            Value oid = vnode.getAttribute("oid");
+            Value syntax = vnode.getAttribute("syntax");
+            if (oid == null)
+                return;
+            int syntaxInt = SMIConstants.SYNTAX_NULL;
+            if (syntax == null)
+                syntaxInt = SMIConstants.SYNTAX_INTEGER;
+            if (syntax != null)
+			    syntaxInt = syntax.getNumber().intValue();
 			if (syntaxInt == SMIConstants.SYNTAX_NULL)
-				return;
+                return;
+            String valstring = event.getParameter("value", ValueType.STRING).getString();
 			Variable val = AbstractVariable.createFromSyntax(syntaxInt);
 			if (!(val instanceof AssignableFromString))
 				return;
@@ -345,7 +350,7 @@ public class SnmpNode {
 			// }
 			pdu.setType(PDU.SET);
 			try {
-				LOGGER.info("sending pdu: " + pdu + "   to target: " + root.target);
+				LOGGER.info("setting OID: " + oid.getString() + "   to value: " + valstring + "   on target: " + root.target);
 				if (root.target != null)
 					snmp.send(pdu, root.target, null, null);
 			} catch (IOException e) {

@@ -12,3 +12,8 @@ build
 .idea
 
 /bin/
+
+
+/.project
+/.settings
+/.vscode
