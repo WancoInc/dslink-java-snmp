@@ -322,16 +322,17 @@ public class SnmpNode {
 				return;
 			PDU pdu = new PDU();
             Value oid = vnode.getAttribute("oid");
-            Value syntax = vnode.getAttribute("syntax");
+            // Value syntax = vnode.getAttribute("syntax");
             if (oid == null)
                 return;
             int syntaxInt = SMIConstants.SYNTAX_NULL;
-            if (syntax == null)
-                syntaxInt = SMIConstants.SYNTAX_INTEGER;
-            if (syntax != null)
-			    syntaxInt = syntax.getNumber().intValue();
-			if (syntaxInt == SMIConstants.SYNTAX_NULL)
-                return;
+            // int syntaxInt = SMIConstants.SYNTAX_NULL;
+            // if (syntax == null)
+            //     syntaxInt = SMIConstants.SYNTAX_INTEGER;
+            // if (syntax != null)
+			//     syntaxInt = syntax.getNumber().intValue();
+			// if (syntaxInt == SMIConstants.SYNTAX_NULL)
+            //     return;
             String valstring = event.getParameter("value", ValueType.STRING).getString();
 			Variable val = AbstractVariable.createFromSyntax(syntaxInt);
 			if (!(val instanceof AssignableFromString))
